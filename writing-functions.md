@@ -186,3 +186,77 @@ sim_regression(3000, 17, 3)
     ##   beta0_hat beta1_hat
     ##       <dbl>     <dbl>
     ## 1      17.0      3.01
+
+## Scrape lots of napoleon
+
+``` r
+url = "https://www.amazon.com/product-reviews/B00005JNBQ/ref=cm_cr_arp_d_viewopt_rvwer?ie=UTF8&reviewerType=avp_only_reviews&sortBy=recent&pageNumber=1"
+
+dynamite_html = read_html(url)
+
+review_titles = dynamite_html %>%
+  html_nodes("#cm_cr-review_list .review-title") %>%
+  html_text()
+
+review_stars = dynamite_html %>%
+  html_nodes("#cm_cr-review_list .review-rating") %>%
+  html_text()
+
+review_text = dynamite_html %>%
+    html_nodes(".review-data:nth-child(4)") %>%
+    html_text()
+
+reviews = tibble(
+  title = review_titles,
+  stars = review_stars,
+  text = review_text
+)
+```
+
+now as a function
+
+``` r
+read_page_reviews <- function(page_url) {
+  
+  h = read_html(page_url)
+  
+  review_titles = h %>%
+    html_nodes("#cm_cr-review_list .review-title") %>%
+    html_text()
+  
+  review_stars = h %>%
+    html_nodes("#cm_cr-review_list .review-rating") %>%
+    html_text() %>%
+    str_extract("\\d") %>%
+    as.numeric()
+  
+  review_text = h %>%
+    html_nodes(".review-data:nth-child(4)") %>%
+    html_text()
+  
+  tibble(
+    title = review_titles,
+    stars = review_stars,
+    text = review_text
+  )
+  
+}
+```
+
+``` r
+read_page_reviews("https://www.amazon.com/product-reviews/B00005JNBQ/ref=cm_cr_arp_d_viewopt_rvwer?ie=UTF8&reviewerType=avp_only_reviews&sortBy=recent&pageNumber=3")
+```
+
+    ## # A tibble: 10 x 3
+    ##    title                                  stars text                       
+    ##    <chr>                                  <dbl> <chr>                      
+    ##  1 "A classic!\n            "                 5 Format: DVDVerified Purcha…
+    ##  2 "A must own\n            "                 5 Format: Prime VideoVerifie…
+    ##  3 "If you like 80s ...you must watch\n …     5 Format: Prime VideoVerifie…
+    ##  4 "🤘\n            "                         5 Format: Prime VideoVerifie…
+    ##  5 "Super Slow Mooovie...\n            "      1 Format: Prime VideoVerifie…
+    ##  6 "Awesome!\n            "                   5 Format: Prime VideoVerifie…
+    ##  7 "Very funny\n            "                 4 Format: Prime VideoVerifie…
+    ##  8 "Eat your food tina\n            "         5 Format: Prime VideoVerifie…
+    ##  9 "Dumb funny\n            "                 5 Format: DVDVerified Purcha…
+    ## 10 "Annoying! Not in a good way.\n      …     1 Format: Prime VideoVerifie…
