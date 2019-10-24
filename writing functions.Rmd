@@ -2,7 +2,7 @@
 title: "writing functions"
 author: "Yuning Wang"
 date: "10/24/2019"
-output: html_document
+output: github_document
 ---
 
 ```{r setup, include=FALSE}
@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 library(tidyverse)
 library(rvest)
+library(ggridges)
 
 set.seed(1)
 ```
@@ -45,7 +46,7 @@ z_score = function(x) {
 
 Try out the function
 
-```{rerror=FALSE}
+```{r error=TRUE}
 z_score(x = y)
 z_score(x_again)
 
@@ -84,4 +85,42 @@ test this function
 mean_and_sd(input_x =  y)
 ```
 
+### Multiple Inputs
+
+```{r}
+sim_data = tibble(
+  x = rnorm(30, mean = 1, sd = 1),
+  y = 2 + 3 * x + rnorm(30, 0, 1)
+)
+
+sim_data %>% ggplot(aes(x = x, y = y)) + geom_point()
+
+ls_fit = lm(y ~ x, data = sim_data)
+  
+beta0_hat = coef(ls_fit)[1]
+beta1_hat = coef(ls_fit)[2]
+```
+
+```{r}
+sim_regression = function(n, beta0, beta1){
+  
+  sim_data = tibble(
+  x = rnorm(n, mean = 1, sd = 1),
+  y = beta0 + beta1 * x + rnorm(n, 0, 1)
+)
+
+
+ls_fit = lm(y ~ x, data = sim_data)
+
+tibble(
+  # the intercept  
+  beta0_hat = coef(ls_fit)[1],
+  # the slope
+  beta1_hat = coef(ls_fit)[2])
+}
+
+sim_regression(n = 3000, beta0 = 17, beta1 = 3)
+
+sim_regression(3000, 17, 3)
+```
 
