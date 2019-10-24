@@ -22,7 +22,7 @@ write some functions
 ```{r}
 x = rnorm(n = 30, mean = 4, sd = 2.3)
 x_again = rnorm(n = 30, mean = 6, sd = .3)
-y = rnorm(n = 25, mean = 5, sd = 3)
+
 
 (x - mean(x)) / sd(x)
 (x_again - mean(x_again)) / sd(x_again)
@@ -47,7 +47,7 @@ z_score = function(x) {
 Try out the function
 
 ```{r error=TRUE}
-z_score(x = y)
+z_score(x = x)
 z_score(x_again)
 
 z_score(x = 3)
@@ -82,7 +82,7 @@ mean_and_sd = function(input_x) {
 test this function
 
 ```{r}
-mean_and_sd(input_x =  y)
+mean_and_sd(input_x =  x)
 ```
 
 ### Multiple Inputs
@@ -184,6 +184,22 @@ read_page_reviews <- function(page_url) {
 ```{r}
 read_page_reviews("https://www.amazon.com/product-reviews/B00005JNBQ/ref=cm_cr_arp_d_viewopt_rvwer?ie=UTF8&reviewerType=avp_only_reviews&sortBy=recent&pageNumber=3")
 ```
+
+## Scoping and names
+
+```{r}
+f = function(x) {
+  z = x + y
+  z
+}
+
+x = 1
+y = 2
+
+f(x = y)
+```
+
+
 
 
 

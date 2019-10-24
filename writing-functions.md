@@ -10,7 +10,7 @@ write some functions
 ``` r
 x = rnorm(n = 30, mean = 4, sd = 2.3)
 x_again = rnorm(n = 30, mean = 6, sd = .3)
-y = rnorm(n = 25, mean = 5, sd = 3)
+
 
 (x - mean(x)) / sd(x)
 ```
@@ -48,17 +48,19 @@ z_score = function(x) {
 }
 ```
 
-Try out the function
+Try out the
+    function
 
 ``` r
-z_score(x = y)
+z_score(x = x)
 ```
 
-    ##  [1]  2.27000584 -0.09941700  0.60822782 -0.03414277 -0.78284574
-    ##  [6]  0.12194164 -1.81345954  1.36133805  0.08744277  2.04770191
-    ## [11]  0.40026771 -0.75049432  0.53152723 -0.96808544 -1.27826957
-    ## [16]  0.22159127 -0.49164376 -0.06025241  0.01084022 -0.63359324
-    ## [21] -0.61335130 -0.19254784  1.08228332 -1.54030301  0.51523816
+    ##  [1] -0.767120446  0.109493425 -0.993470503  1.637039863  0.267334741
+    ##  [6] -0.977065475  0.438222871  0.709719461  0.533829741 -0.419692475
+    ## [11]  1.546684110  0.332624325 -0.761479160 -2.485776741  1.128069748
+    ## [16] -0.137851865 -0.106748415  0.932105430  0.799422547  0.553437533
+    ## [21]  0.905205442  0.757128408 -0.008541293 -2.241925304  0.581490604
+    ## [26] -0.149966223 -0.257816586 -1.680744021 -0.606639531  0.363029790
 
 ``` r
 z_score(x_again)
@@ -124,13 +126,13 @@ mean_and_sd = function(input_x) {
 test this function
 
 ``` r
-mean_and_sd(input_x =  y)
+mean_and_sd(input_x =  x)
 ```
 
     ## # A tibble: 1 x 2
     ##    mean    sd
     ##   <dbl> <dbl>
-    ## 1  5.19  3.09
+    ## 1  4.19  2.13
 
 ### Multiple Inputs
 
@@ -260,3 +262,19 @@ read_page_reviews("https://www.amazon.com/product-reviews/B00005JNBQ/ref=cm_cr_a
     ##  8 "Eat your food tina\n            "         5 Format: Prime VideoVerifie…
     ##  9 "Dumb funny\n            "                 5 Format: DVDVerified Purcha…
     ## 10 "Annoying! Not in a good way.\n      …     1 Format: Prime VideoVerifie…
+
+## Scoping and names
+
+``` r
+f = function(x) {
+  z = x + y
+  z
+}
+
+x = 1
+y = 2
+
+f(x = y)
+```
+
+    ## [1] 4
