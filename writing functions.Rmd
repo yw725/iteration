@@ -1,0 +1,87 @@
+---
+title: "writing functions"
+author: "Yuning Wang"
+date: "10/24/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(rvest)
+
+set.seed(1)
+```
+
+## Get started
+
+write some functions
+
+```{r}
+x = rnorm(n = 30, mean = 4, sd = 2.3)
+x_again = rnorm(n = 30, mean = 6, sd = .3)
+y = rnorm(n = 25, mean = 5, sd = 3)
+
+(x - mean(x)) / sd(x)
+(x_again - mean(x_again)) / sd(x_again)
+```
+
+Now a function
+
+```{r}
+z_score = function(x) {
+  
+  if(!is.numeric(x)){
+    stop("x should be numeric")
+  } else if (length(x) == 1) {
+    stop("Z scores cannot be computed for length 1 vectors")
+  }
+  
+  z = (x - mean(x)) / sd(x)
+  z
+}
+```
+
+Try out the function
+
+```{rerror=FALSE}
+z_score(x = y)
+z_score(x_again)
+
+z_score(x = 3)
+z_score("my name is jeff")
+z_score(sample(c(TRUE, FALSE), 25, replace = TRUE))
+z_score(c(T, T, F, F))
+
+z_score(x = iris)
+```
+
+### Multiple outputs
+
+```{r}
+mean_and_sd = function(input_x) {
+  
+  if (!is.numeric(input_x)) {
+    stop("Argument x should be numeric")
+  } else if (length(input_x) == 1) {
+    stop("Cannot be computed for length 1 vectors")
+  }
+  
+  mean_x = mean(input_x)
+  sd_x = sd(input_x)
+
+  tibble(
+    mean = mean_x, 
+    sd = sd_x
+  )
+}
+```
+
+test this function
+
+```{r}
+mean_and_sd(input_x =  y)
+```
+
+
