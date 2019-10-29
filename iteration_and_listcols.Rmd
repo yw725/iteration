@@ -1,0 +1,273 @@
+---
+title: "iteration_and_listcols"
+author: "Yuning Wang"
+date: "10/29/2019"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(rvest)
+set.seed(1)
+```
+
+## Lists
+
+```{r}
+l = list(vec_numeric = 5:8,
+         mat         = matrix(1:8, 2, 4),
+         vec_logical = c(TRUE, FALSE),
+         summary     = summary(rnorm(1000)))
+l
+```
+
+```{r}
+mean(l$vec_numeric)
+
+l$summary
+
+l[[2]]
+```
+
+
+```{r}
+df = tibble(
+  a = rnorm(20, 3, 1),
+  b = rnorm(20, 0, 5),
+  c = rnorm(20, 10, .2),
+  d = rnorm(20, -3, 1)
+)
+
+
+is.list(df)
+
+df = list(
+  a = rnorm(20, 3, 1),
+  b = rnorm(20, 0, 5),
+  c = rnorm(20, 10, .2),
+  d = rnorm(20, -3, 1)
+)
+```
+
+Set up a function
+
+```{r}
+mean_and_sd = function(x) {
+  
+  if (!is.numeric(x)) {
+    stop("Argument x should be numeric")
+  } else if (length(x) == 1) {
+    stop("Cannot be computed for length 1 vectors")
+  }
+  
+  mean_x = mean(x)
+  sd_x = sd(x)
+
+  tibble(
+    mean = mean_x, 
+    sd = sd_x
+  )
+}
+```
+
+
+```{r}
+mean_and_sd(df[[1]])
+mean_and_sd(df[[2]])
+mean_and_sd(df[[3]])
+mean_and_sd(df[[4]])
+```
+
+```{r}
+output = vector("list", length = 4)
+```
+
+Write our for loop!
+
+```{r}
+
+for (i in 1:4) {
+  
+ output[[i]] = mean_and_sd(df[[i]])
+}
+
+output
+
+# Change the for loop into map function
+
+output = map(df, mean_and_sd)
+
+output_median = map(df, median)
+
+output_summary = map(df, summary)
+
+output_median = map_dbl(df, median)
+output = map_dfr(df, mean_and_sd)
+
+output = map(df, ~mean_and_sd(.x))
+```
+
+
+```{r}
+read_page_reviews = function(url) {
+  
+  h = read_html(url)
+  
+  title = h %>%
+    html_nodes("#cm_cr-review_list .review-title") %>%
+    html_text()
+  
+  stars = h %>%
+    html_nodes("#cm_cr-review_list .review-rating") %>%
+    html_text() %>%
+    str_extract("\\d") %>%
+    as.numeric()
+  
+  text = h %>%
+    html_nodes(".review-data:nth-child(5)") %>%
+    html_text()
+  
+  data_frame(title, stars, text)
+}
+```
+
+
+```{r}
+url_base = "https://www.amazon.com/product-reviews/B00005JNBQ/ref=cm_cr_arp_d_viewopt_rvwer?ie=UTF8&reviewerType=avp_only_reviews&sortBy=recent&pageNumber="
+vec_urls = str_c(url_base, 1:5)
+vec_urls
+
+output = vector("list", length = 5)
+
+for(i in 1:5) {
+  
+  output[[i]] = read_page_reviews(vec_urls[[i]])
+}
+
+output = map(vec_urls, read_page_reviews)
+
+output
+```
+
+
+## List columns
+
+```{r}
+weather = 
+  rnoaa::meteo_pull_monitors(
+    c("USW00094728", "USC00519397", "USS0023B17S"),
+    var = c("PRCP", "TMIN", "TMAX"), 
+    date_min = "2016-01-01",
+    date_max = "2016-12-31") %>%
+  mutate(
+    name = recode(id, USW00094728 = "CentralPark_NY", 
+                      USC00519397 = "Waikiki_HA",
+                      USS0023B17S = "Waterhole_WA"),
+    tmin = tmin / 10,
+    tmax = tmax / 10) %>%
+  select(name, id, everything())
+```
+
+nest within station
+
+```{r}
+weather_nest = 
+  weather %>% 
+  nest(data = date:tmin)
+```
+
+Is the list column reaaly a list?
+
+```{r}
+weather_nest %>% pull(name)
+weather_nest %>% pull(data)
+
+weather_nest$data[[1]]
+
+#weather_nest %>% unnest()
+```
+
+# Operations on list columns
+
+can I do useful thins with a list column?
+
+```{r}
+central_park_df = weather_nest$data[[1]]
+
+lm(tmax ~ tmin, data = central_park_df)
+
+lm(tmax ~ tmin, data = weather_nest$data[[1]])
+lm(tmax ~ tmin, data = weather_nest$data[[2]])
+lm(tmax ~ tmin, data = weather_nest$data[[3]])
+```
+
+try loop
+
+write a function
+
+```{r}
+weather_lm = function(df) {
+  
+  lm(tmax ~ tmin, data = df)
+  
+}
+```
+
+
+```{r}
+output = vector("list", length = 3)
+
+for (i in 1:3) {
+  
+  output[[i]] = weather_lm(weather_nest$data[[i]])
+  
+}
+output
+```
+
+turn into a map statement
+
+
+```{r}
+for (i in 1:3) {
+  
+  output[[i]] = weather_lm(weather_nest$data[[i]])
+  
+}
+output
+
+output = map(weather_nest$data, weather_lm)
+```
+
+use a map to build linear models for datasets
+
+```{r}
+weather_nest %>% 
+  mutate(lin_models = map(data, weather_lm)) %>% 
+  select(-data) %>% 
+  filter(name != "CentralPark_NY")
+```
+
+## Revisit napoleon ... again
+
+```{r}
+napoleon = tibble(
+  page = 1:5,
+  urls = str_c(url_base, page)
+) %>% 
+  mutate(
+    reviews = map(urls, read_page_reviews)
+  ) %>% 
+  unnest() %>% 
+  select(-urls)
+```
+
+
+
+
+
+
+
+
